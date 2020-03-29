@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Escalonamento de Processos</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="instrucoes">
+      <p>
+        <strong>Instruções: </strong> Escolha o tipo de algoritmo de
+        escalonamento de processos, depois coloque o nome do processo, o tempo e
+        o nível de prioridade. Clique no sinal de mais para adicionar o processo
+        e repita a operação para adicionar os demais processos. Ao terminar
+        clique em finalizar para executar o programa.
+      </p>
+    </div>
+
+    <div class="form">
+      <div class="form-group">
+        <select
+          name="tipoProcesso"
+          onblur="verificaTipo"
+          onchange="verificaTipo"
+          id="tipoProcesso"
+        >
+          <option value="fifo">--- Tipo de Processo ---</option>
+          <option value="fifo">FIFO</option>
+          <option value="sjf">SJF Não Preemptivo</option>
+          <option value="prioridade">Prioridade</option>
+          <option value="rr">Round-Robin</option>
+        </select>
+
+        <input type="text" placeholder="Nome" id="nome" />
+        <input max="12" type="number" placeholder="Tempo" id="tempo" />
+
+        <select id="prioridade">
+          <option value="6">Baixa</option>
+          <option value="5">Abaixo do normal</option>
+          <option value="4" selected>Normal</option>
+          <option value="3">Acima do normal</option>
+          <option value="2">Alta</option>
+          <option value="1">Tempo Real</option>
+        </select>
+
+        <div class="button-group">
+          <button id="adicionar" onclick="addProcesso">+</button>
+          <button id="terminar" onclick="executaProcesso">Terminar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="processos-container" id="processos-container"></div>
+
+    <table class="fixed">
+      <thead>
+        <tr>
+          <td>Nome do Processo</td>
+          <td>Tempo do Processo</td>
+          <td id="nivelPrioridade">Nível de Prioridade</td>
+          <td>Porcentagem Executada</td>
+        </tr>
+      </thead>
+      <tbody id="processos"></tbody>
+    </table>
+
+    <script src="js/escalonadorProcessos.js"></script>
+    <script src="js/elementosGraficos.js"></script>
+    <script>
+      let tipoProcesso = "fifo";
+      function verificaTipo() {
+        let tipo = document.getElementById("tipoProcesso");
+        tipoProcesso = tipo.value;
+      }
+
+      let processos = [];
+      function addProcesso(e) {
+        let nome = document.getElementById("nome").value;
+        let tempo = parseInt(document.getElementById("tempo").value);
+        let prioridade = document.getElementById("prioridade").value;
+
+        let data = {
+          nome,
+          tempo,
+          prioridade,
+          tempoExecutado: 0
+        };
+        processos.push(data);
+
+        document.getElementById("nome").value = "";
+        document.getElementById("tempo").value = "";
+        document.getElementById("prioridade").value = 4;
+        document.getElementById("processos").innerHTML = "";
+        document.getElementById("processos-container").innerHTML = "";
+        e.preventDefault();
+      }
+
+      function executaProcesso(e) {
+        document.getElementById("tipoProcesso").removeAttribute("disabled");
+        const escalonador = new EscalonadorProcessos(tipoProcesso);
+
+        escalonador.setProcesso(processos);
+        escalonador.setQuantum(4);
+        let processosEscalonados = escalonador.getProcessos();
+
+        new RenderizarElementos(processosEscalonados, tipoProcesso);
+        processos = [];
+
+        e.preventDefault();
+      }
+      document
+        .getElementById("tipoProcesso")
+        .addEventListener("click", verificaTipo, false);
+
+      document.getElementById("tipoProcesso").addEventListener(
+        "change",
+        () => {
+          document
+            .getElementById("tipoProcesso")
+            .setAttribute("disabled", true);
+        },
+        false
+      );
+
+      document
+        .getElementById("adicionar")
+        .addEventListener("click", addProcesso, false);
+
+      document
+        .getElementById("terminar")
+        .addEventListener("click", executaProcesso, false);
+    </script>
+  </body>
+</html>
